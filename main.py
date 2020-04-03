@@ -2,15 +2,15 @@ import pygame
 import random
 import numpy as np
 
-WIDTH = 500
-HEIGHT = 500
+WIDTH = 400
+HEIGHT = 400
 RADIUS = 5
 
-MAX_VELOCITY = 5
-MAX_ACCELERATION = 5
-POPULATION_SIZE = 200
+MAX_VELOCITY = 3
+MAX_ACCELERATION = 3
+POPULATION_SIZE = 300
 INFECTION_PROBABILITY = 0.2
-SICK_TIME = 400
+SICK_TIME = 300
 
 BACKGROUND_COLOR = (0, 0, 0)
 
@@ -72,7 +72,7 @@ class Person:
             if (
                 self.state == "healthy"
                 and self != o
-                and self._distance(self.position, o.position) < 2 * RADIUS
+                and self._distance(self.position, o.position) < 3 * RADIUS
                 and o.state == "sick"
             ):
                 if random.random() < INFECTION_PROBABILITY:
