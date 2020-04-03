@@ -71,10 +71,18 @@ class Person:
             screen, STATE_COLOR[self.state], tuple(self.position), RADIUS
         )
 
+    def spread_infection(self, healthy_people):
+        for h in healthy_people:
+            d = np.linalg.norm(self.position - h.position)
+            if d < 2 * RADIUS:
+                h.state = 1
+
 
 class Population:
     def __init__(self):
         self.population = [Person() for _ in range(POPULATION_SIZE)]
+        self.infected = []
+        self.healthy = []
         self._patient_zero()
 
     def _patient_zero(self):
@@ -87,6 +95,12 @@ class Population:
     def move(self):
         for p in self.population:
             p.move()
+
+    def infect(self):
+        self.infected = [p for p in self.population if p.state == 1]
+        self.healthy = [p for p in self.population if p.state == 0]
+        for p in self.infected:
+            p.spread_infection(self.healthy)
 
 
 if __name__ == "__main__":
@@ -101,6 +115,7 @@ if __name__ == "__main__":
                 running = False
         screen.fill(BACKGROUND)  # Background
         pop.move()
+        pop.infect()
         pop.draw(screen)
         pygame.display.flip()  # actually draw to screen
         clock.tick(30)
