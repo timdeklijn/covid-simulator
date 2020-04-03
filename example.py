@@ -1,16 +1,16 @@
 # https://realpython.com/pygame-a-primer/
 # NEVER CALL PYGAME SCRIPT pygame.py !!!!
 
-# TODO: Heal/Remove individuals
 # TODO: Social Distancing? bonus
 
 import pygame
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Screen settings
 WIDTH = 500
 HEIGHT = 500
-RADIUS = 7
+RADIUS = 10
 
 # Simulation settings
 MAX_VELOCITY = 4
@@ -18,11 +18,31 @@ MAX_ACCELERATION = 5
 POPULATION_SIZE = 100
 INFECTION_PROBABILITY = 0.2
 INFECTION_RADIUS = 2.5 * RADIUS
-INFECTION_TIME = 200
+INFECTION_TIME = 100
 
 # colors
 BACKGROUND = (150, 150, 150)
 STATE_COLOR = {0: (0, 255, 0), 1: (255, 0, 0), 2: (255, 255, 0)}
+
+
+class Data:
+    def __init__(self):
+        self.healthy = []
+        self.infected = []
+        self.removed = []
+
+    def add_stats(self, healthy, infected, removed):
+        self.healthy.append(healthy)
+        self.infected.append(infected)
+        self.removed.append(removed)
+
+    def plot(self):
+        x = range(len(self.healthy))
+        plt.plot(x, self.healthy, label="healthy")
+        plt.plot(x, self.infected, label="infected")
+        plt.plot(x, self.removed, label="removed")
+        plt.legend()
+        plt.show()
 
 
 class Person:
@@ -68,12 +88,14 @@ class Person:
         y_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
         acc = np.array([x_acc, y_acc])
         # vel <- update based on acc
-        if self.state != 1:
-            self.velocity = np.add(self.velocity, acc)
-        else:
-            self.velocity = np.array(
-                [np.random.choice([-1, 0, 1]), np.random.choice([-1, 0, 1])]
-            )
+        self.velocity = np.add(self.velocity, acc)
+
+        # if self.state != 1:
+        #     self.velocity = np.add(self.velocity, acc)
+        # else:
+        #     self.velocity = np.array(
+        #         [np.random.choice([-1, 0, 1]), np.random.choice([-1, 0, 1])]
+        # )
         self._limit_velocity()
         # pos <- update based on vel
         self.position = np.add(self.position, self.velocity)
@@ -97,6 +119,8 @@ class Population:
         self.population = [Person() for _ in range(POPULATION_SIZE)]
         self.infected = []
         self.healthy = []
+        self.data = Data()
+        self.done = False
         self._patient_zero()
 
     def _patient_zero(self):
@@ -126,6 +150,17 @@ class Population:
             if p.timer == 0:
                 p.state = 2
 
+    def add_stats(self):
+        self.data.add_stats(
+            len(self.healthy),
+            len(self.infected),
+            len([p for p in self.population if p.state == 2]),
+        )
+
+    def check_done(self):
+        if len(self.infected) == 0:
+            self.done = True
+
 
 if __name__ == "__main__":
     pygame.init()
@@ -133,15 +168,21 @@ if __name__ == "__main__":
     screen = pygame.display.set_mode([WIDTH, HEIGHT])  # Init screen
     running = True
     pop = Population()
+    c = 0
     while running:  # start game loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type == pygame.QUIT or pop.done:
                 running = False
         screen.fill(BACKGROUND)  # Background
         pop.move()
         pop.infect()
         pop.heal()
+        pop.check_done()
         pop.draw(screen)
+        if c % 30 == 0:
+            pop.add_stats()
         pygame.display.flip()  # actually draw to screen
         clock.tick(30)
+        c += 1
     pygame.quit()
+    pop.data.plot()
