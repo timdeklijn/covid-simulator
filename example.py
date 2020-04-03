@@ -1,20 +1,26 @@
 # https://realpython.com/pygame-a-primer/
 # NEVER CALL PYGAME SCRIPT pygame.py !!!!
 
+# TODO: Heal/Remove individuals
+# TODO: Social Distancing? bonus
+
 import pygame
 import numpy as np
 
+# Screen settings
 WIDTH = 500
 HEIGHT = 500
-
 RADIUS = 10
+
+# Simulation settings
 MAX_VELOCITY = 5
 MAX_ACCELERATION = 5
+POPULATION_SIZE = 100
+INFECTION_PROBABILITY = 0.2
+INFECTION_RADIUS = 3 * RADIUS
 
-POPULATION_SIZE = 50
-
+# colors
 BACKGROUND = (150, 150, 150)
-
 STATE_COLOR = {0: (0, 255, 0), 1: (255, 0, 0), 2: (255, 255, 0)}
 
 
@@ -22,7 +28,7 @@ class Person:
     def __init__(self):
         self.position = self._init_position()
         self.velocity = self._init_velocity()
-        self.state = 0  # 0 - healthy, 1 - infected, 2 - removed
+        self.state = 0  # 0 : healthy, 1 : infected, 2 : removed
 
     def _init_velocity(self):
         x = np.random.randint(-MAX_VELOCITY, MAX_VELOCITY + 1)
@@ -74,7 +80,7 @@ class Person:
     def spread_infection(self, healthy_people):
         for h in healthy_people:
             d = np.linalg.norm(self.position - h.position)
-            if d < 2 * RADIUS:
+            if d < INFECTION_RADIUS:
                 h.state = 1
 
 
@@ -100,7 +106,8 @@ class Population:
         self.infected = [p for p in self.population if p.state == 1]
         self.healthy = [p for p in self.population if p.state == 0]
         for p in self.infected:
-            p.spread_infection(self.healthy)
+            if np.random.rand() < INFECTION_PROBABILITY:  # Less realistic, but less loops in simulation
+                p.spread_infection(self.healthy)
 
 
 if __name__ == "__main__":
