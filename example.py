@@ -10,14 +10,15 @@ import numpy as np
 # Screen settings
 WIDTH = 500
 HEIGHT = 500
-RADIUS = 10
+RADIUS = 7
 
 # Simulation settings
-MAX_VELOCITY = 5
+MAX_VELOCITY = 4
 MAX_ACCELERATION = 5
 POPULATION_SIZE = 100
 INFECTION_PROBABILITY = 0.2
-INFECTION_RADIUS = 3 * RADIUS
+INFECTION_RADIUS = 2.5 * RADIUS
+INFECTION_TIME = 200
 
 # colors
 BACKGROUND = (150, 150, 150)
@@ -29,6 +30,7 @@ class Person:
         self.position = self._init_position()
         self.velocity = self._init_velocity()
         self.state = 0  # 0 : healthy, 1 : infected, 2 : removed
+        self.timer = None
 
     def _init_velocity(self):
         x = np.random.randint(-MAX_VELOCITY, MAX_VELOCITY + 1)
@@ -66,7 +68,12 @@ class Person:
         y_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
         acc = np.array([x_acc, y_acc])
         # vel <- update based on acc
-        self.velocity = np.add(self.velocity, acc)
+        if self.state != 1:
+            self.velocity = np.add(self.velocity, acc)
+        else:
+            self.velocity = np.array(
+                [np.random.choice([-1, 0, 1]), np.random.choice([-1, 0, 1])]
+            )
         self._limit_velocity()
         # pos <- update based on vel
         self.position = np.add(self.position, self.velocity)
@@ -82,6 +89,7 @@ class Person:
             d = np.linalg.norm(self.position - h.position)
             if d < INFECTION_RADIUS:
                 h.state = 1
+                h.timer = INFECTION_TIME
 
 
 class Population:
@@ -93,6 +101,7 @@ class Population:
 
     def _patient_zero(self):
         self.population[0].state = 1
+        self.population[0].timer = INFECTION_TIME
 
     def draw(self, screen):
         for p in self.population:
@@ -106,8 +115,16 @@ class Population:
         self.infected = [p for p in self.population if p.state == 1]
         self.healthy = [p for p in self.population if p.state == 0]
         for p in self.infected:
-            if np.random.rand() < INFECTION_PROBABILITY:  # Less realistic, but less loops in simulation
+            if (
+                np.random.rand() < INFECTION_PROBABILITY
+            ):  # Less realistic, but less loops in simulation
                 p.spread_infection(self.healthy)
+
+    def heal(self):
+        for p in self.infected:
+            p.timer -= 1
+            if p.timer == 0:
+                p.state = 2
 
 
 if __name__ == "__main__":
@@ -123,6 +140,7 @@ if __name__ == "__main__":
         screen.fill(BACKGROUND)  # Background
         pop.move()
         pop.infect()
+        pop.heal()
         pop.draw(screen)
         pygame.display.flip()  # actually draw to screen
         clock.tick(30)
