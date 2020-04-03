@@ -15,10 +15,11 @@ RADIUS = 10
 # Simulation settings
 MAX_VELOCITY = 4
 MAX_ACCELERATION = 5
-POPULATION_SIZE = 100
+POPULATION_SIZE = 250
 INFECTION_PROBABILITY = 0.2
 INFECTION_RADIUS = 2.5 * RADIUS
 INFECTION_TIME = 100
+RESTRICT_SICK = True
 
 # colors
 BACKGROUND = (150, 150, 150)
@@ -88,14 +89,15 @@ class Person:
         y_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
         acc = np.array([x_acc, y_acc])
         # vel <- update based on acc
-        self.velocity = np.add(self.velocity, acc)
-
-        # if self.state != 1:
-        #     self.velocity = np.add(self.velocity, acc)
-        # else:
-        #     self.velocity = np.array(
-        #         [np.random.choice([-1, 0, 1]), np.random.choice([-1, 0, 1])]
-        # )
+        if not RESTRICT_SICK:
+            self.velocity = np.add(self.velocity, acc)
+        else:
+            if self.state != 1:
+                self.velocity = np.add(self.velocity, acc)
+            else:
+                self.velocity = np.array(
+                    [np.random.choice([-1, 0, 1]), np.random.choice([-1, 0, 1])]
+                )
         self._limit_velocity()
         # pos <- update based on vel
         self.position = np.add(self.position, self.velocity)
