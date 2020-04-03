@@ -15,11 +15,14 @@ POPULATION_SIZE = 50
 
 BACKGROUND = (150, 150, 150)
 
+STATE_COLOR = {0: (0, 255, 0), 1: (255, 0, 0), 2: (255, 255, 0)}
+
 
 class Person:
     def __init__(self):
         self.position = self._init_position()
         self.velocity = self._init_velocity()
+        self.state = 0  # 0 - healthy, 1 - infected, 2 - removed
 
     def _init_velocity(self):
         x = np.random.randint(-MAX_VELOCITY, MAX_VELOCITY + 1)
@@ -64,12 +67,18 @@ class Person:
         self._boundary_conditions()
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (0, 0, 255), tuple(self.position), RADIUS)
+        pygame.draw.circle(
+            screen, STATE_COLOR[self.state], tuple(self.position), RADIUS
+        )
 
 
 class Population:
     def __init__(self):
         self.population = [Person() for _ in range(POPULATION_SIZE)]
+        self._patient_zero()
+
+    def _patient_zero(self):
+        self.population[0].state = 1
 
     def draw(self, screen):
         for p in self.population:
