@@ -1,31 +1,62 @@
 # https://realpython.com/pygame-a-primer/
+# NEVER CALL PYGAME SCRIPT pygame.py
 
 import pygame
-
+import numpy as np
 
 WIDTH = 500
 HEIGHT = 500
 
+RADIUS = 20
+
+MAX_VELOCITY = 5
+MAX_ACCELERATION = 5
+
 
 class Person:
     def __init__(self):
-        self.position = None
+        self.position = self._init_position()
+        self.velocity = self._init_velocity()
+
+    def _init_velocity(self):
+        x = np.random.randint(-MAX_VELOCITY, MAX_VELOCITY + 1)
+        y = np.random.randint(-MAX_VELOCITY, MAX_VELOCITY + 1)
+        return np.array([x, y])
 
     def _init_position(self):
-        pass
+        x = np.random.randint(0, WIDTH)
+        y = np.random.randint(0, HEIGHT)
+        return np.array([x, y])
+
+    def _boundary_conditions(self):
+        if self.position[0] < 0:
+            self.position[0] = WIDTH - 1
+        if self.position[0] > WIDTH:
+            self.position[0] = 0
+        if self.position[1] < 0:
+            self.position[1] = HEIGHT - 1
+        if self.position[1] > HEIGHT:
+            self.position[1] = 0
 
     def move(self):
-        pass
+        # acc <- calc every frame
+        x_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
+        y_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
+        acc = np.array([x_acc, y_acc])
+        # vel <- update based on acc
+        self.velocity = np.add(self.velocity, acc)
+        # pos <- update based on vel
+        self.position = np.add(self.position, self.velocity)
+        self._boundary_conditions()
 
     def draw(self, screen):
-        pygame.draw.circle(screen, (0, 0, 255), (259, 250), 75)
+        pygame.draw.circle(screen, (0, 0, 255), tuple(self.position), RADIUS)
 
 
 if __name__ == "__main__":
     pygame.init()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])  # Init screen
     running = True
-    # x, y = 0, 0
     p = Person()
     while running:  # start game loop
         for event in pygame.event.get():
@@ -34,10 +65,5 @@ if __name__ == "__main__":
         screen.fill((255, 255, 255))  # Background
         p.move()
         p.draw(screen)
-        # pygame.draw.circle(
-        #     screen, (0, 0, 255), (x, y), 75
-        # )  # circle(screen, color, (x,y), radius)
         pygame.display.flip()  # actually draw to screen
-        # x += 1
-        # y += 1
     pygame.quit()
