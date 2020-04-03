@@ -8,8 +8,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Screen settings
-WIDTH = 500
-HEIGHT = 500
+WIDTH = 300
+HEIGHT = 300
 RADIUS = 10
 
 # Simulation settings
@@ -173,8 +173,10 @@ if __name__ == "__main__":
     c = 0
     while running:  # start game loop
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or pop.done:
+            if event.type == pygame.QUIT:
                 running = False
+        if pop.done:
+            running = False
         screen.fill(BACKGROUND)  # Background
         pop.move()
         pop.infect()
