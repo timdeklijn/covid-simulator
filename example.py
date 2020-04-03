@@ -38,6 +38,16 @@ class Person:
         if self.position[1] > HEIGHT:
             self.position[1] = 0
 
+    def _limit_velocity(self):
+        if self.velocity[0] < -MAX_VELOCITY:
+            self.velocity[0] = -MAX_VELOCITY
+        if self.velocity[0] > MAX_VELOCITY:
+            self.velocity[0] = MAX_VELOCITY
+        if self.velocity[1] < -MAX_VELOCITY:
+            self.velocity[1] = -MAX_VELOCITY
+        if self.velocity[1] > MAX_VELOCITY:
+            self.velocity[1] = MAX_VELOCITY
+
     def move(self):
         # acc <- calc every frame
         x_acc = np.random.randint(-MAX_ACCELERATION, MAX_ACCELERATION + 1)
@@ -45,6 +55,7 @@ class Person:
         acc = np.array([x_acc, y_acc])
         # vel <- update based on acc
         self.velocity = np.add(self.velocity, acc)
+        self._limit_velocity()
         # pos <- update based on vel
         self.position = np.add(self.position, self.velocity)
         self._boundary_conditions()
