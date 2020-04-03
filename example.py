@@ -1,5 +1,5 @@
 # https://realpython.com/pygame-a-primer/
-# NEVER CALL PYGAME SCRIPT pygame.py
+# NEVER CALL PYGAME SCRIPT pygame.py !!!!
 
 import pygame
 import numpy as np
@@ -7,10 +7,13 @@ import numpy as np
 WIDTH = 500
 HEIGHT = 500
 
-RADIUS = 20
-
+RADIUS = 10
 MAX_VELOCITY = 5
 MAX_ACCELERATION = 5
+
+POPULATION_SIZE = 50
+
+BACKGROUND = (150, 150, 150)
 
 
 class Person:
@@ -64,17 +67,32 @@ class Person:
         pygame.draw.circle(screen, (0, 0, 255), tuple(self.position), RADIUS)
 
 
+class Population:
+    def __init__(self):
+        self.population = [Person() for _ in range(POPULATION_SIZE)]
+
+    def draw(self, screen):
+        for p in self.population:
+            p.draw(screen)
+
+    def move(self):
+        for p in self.population:
+            p.move()
+
+
 if __name__ == "__main__":
     pygame.init()
+    clock = pygame.time.Clock()
     screen = pygame.display.set_mode([WIDTH, HEIGHT])  # Init screen
     running = True
-    p = Person()
+    pop = Population()
     while running:  # start game loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        screen.fill((255, 255, 255))  # Background
-        p.move()
-        p.draw(screen)
+        screen.fill(BACKGROUND)  # Background
+        pop.move()
+        pop.draw(screen)
         pygame.display.flip()  # actually draw to screen
+        clock.tick(30)
     pygame.quit()
